@@ -7,7 +7,7 @@ This (experimental) firmware was made because:
 - I wanted to import my [OpenTherm boiler sensors](https://github.com/wildekek/esphome-opentherm-templates).
 
 ## Warning!
-- This firmware was reverse engineered without intricate knowledge of the board design nor consent of the creator. It may damage the board, void your waranty or cause unexpected behaviour.
+- This firmware was reverse engineered without intricate knowledge of the board design nor consent of the creator. It may damage the board, void your waranty or cause unexpected behaviour. Do not compain to me, SDR Engineering or anyone else when you fry your hardware, flash this firmware at your own risk.
 - There is no fan control algorithm in the firmware (yet). You'll need to do this yourself, or wait for me to do it when I have time. PR's are appreciated.
 
 ## Protip:
