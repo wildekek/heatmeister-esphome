@@ -1,0 +1,187 @@
+esphome:
+  name: heatmeister
+  friendly_name: heatmeister
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret home_assistant_key
+
+# Enable OtA updates
+ota:
+  platform: esphome
+  password: !secret ota_password
+
+# Configure WiFi
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: $device_friendly_name
+    password: !secret wifi_fallback_password
+captive_portal:
+
+i2c:
+  id: i2c_bus
+  sda: 
+    number: GPIO8
+    ignore_strapping_warning: true
+  scl: GPIO10
+  scan: true
+  frequency: 100kHz
+
+ads1115:
+  - address: 0x48
+
+output:
+  # Green LED
+  - platform: ledc
+    id: output_led
+    pin: GPIO6
+  # Fan output
+  - platform: ledc
+    id: output_fan_pwm
+    pin: 
+      number: GPIO4
+      inverted: True
+    frequency: "25000Hz"
+  # Fan 12v power supply
+  - platform: gpio
+    id: output_fan_power
+    pin: GPIO5
+
+
+fan:
+  - platform: speed
+    output: output_fan_pwm
+    name: "Fan"
+    on_turn_off:
+      then:
+        # Turn off the 12v power supply to the fan
+        - output.turn_off: output_fan_power
+    on_turn_on:
+      then:
+        # Turn on the 12v power supply to the fan
+        - output.turn_on: output_fan_power
+
+light:
+  - platform: monochromatic
+    name: "LED"
+    output: output_led
+
+binary_sensor:
+  - platform: gpio
+    name: "Button"
+    pin: 
+      number: GPIO3
+      inverted: True
+      mode:
+        input: true
+        pullup: true
+
+sensor:
+  # Read out the ADC voltages for the external temp sensors
+  - platform: ads1115
+    id: adc1_voltage
+    multiplexer: 'A0_GND'
+    gain: 6.144
+    update_interval: 1s
+    filters:
+      - lambda: |-
+          // Disconnected NTC detection
+          if (x > 3.250 || x < 0.1) {
+            return NAN;
+          }
+          return x;
+  - platform: ads1115
+    id: adc2_voltage
+    multiplexer: 'A1_GND'
+    gain: 6.144
+    update_interval: 1s
+    filters:
+      - lambda: |-
+          // Disconnected NTC detection
+          if (x > 3.250 || x < 0.1) {
+            return NAN;
+          }
+          return x;
+  - platform: ads1115
+    id: adc3_voltage
+    multiplexer: 'A2_GND'
+    gain: 6.144
+    update_interval: 1s
+    filters:
+      - lambda: |-
+          // Disconnected NTC detection
+          if (x > 3.250 || x < 0.1) {
+            return NAN;
+          }
+          return x;
+
+  # ADC to NTC resistance
+  - platform: resistance
+    id: adc_1_resistance
+    sensor: adc1_voltage
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+  - platform: resistance
+    id: adc_2_resistance
+    sensor: adc2_voltage
+    disabled_by_default: True
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+  - platform: resistance
+    id: adc_3_resistance
+    sensor: adc3_voltage
+    disabled_by_default: True
+    configuration: DOWNSTREAM
+    resistor: 10kOhm
+
+  # NTC resistance to temperature sensor
+  - platform: ntc
+    sensor: adc_1_resistance
+    id: "t_amb"
+    name: "Temperature ambient"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+  - platform: ntc
+    sensor: adc_1_resistance
+    id: "t_in"
+    name: "Temperature in"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+  - platform: ntc
+    sensor: adc_1_resistance
+    id: "t_out"
+    name: "Temperature out"
+    calibration:
+      b_constant: 3950
+      reference_temperature: 25°C
+      reference_resistance: 10kOhm
+
+  # Read the internal temperature of the ESP32
+  - platform: internal_temperature
+    name: "Temperature internal"
+
+  # Import sensors from Home Assistant
+#  - platform: homeassistant
+#    entity_id: sensor.living_room_climate_temperature
+#    name: "Temperature room"
+#    internal: False
+#    device_class: "temperature"
+#    unit_of_measurement: "°C"
+#    state_class: "measurement"
