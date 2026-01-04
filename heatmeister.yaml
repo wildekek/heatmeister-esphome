@@ -213,9 +213,7 @@ sensor:
     on_value:
       if:
         condition: 
-          - lambda: |-
-              std::string current = id(control_strategy).current_option();
-              return current == "ΔT";
+          - lambda: 'return id(control_strategy).current_option() == "ΔT";'
         then:
           - lambda: |-
               float delta_t = x;
@@ -271,22 +269,16 @@ sensor:
     on_value:
       - if:
           condition:
-            and: 
-              - lambda: 'return x > 0.1;'
-              - lambda: |-
-                  std::string current = id(control_strategy).current_option();
-                  return current == "output";
-          then:             
-            - fan.turn_on:
-                id: fan_speed
-                speed: !lambda |-
-                  return x;
-          else:
+            - lambda: 'return id(control_strategy).current_option() == "output";'
+          then:
             if:
-              condition: 
-                - lambda: |-
-                    std::string current = id(control_strategy).current_option();
-                    return current == "output";
-              then:
+              condition:
+                  - lambda: 'return x > 0.1;'
+              then:             
+                - fan.turn_on:
+                    id: fan_speed
+                    speed: !lambda |-
+                      return x;
+              else:
                 - fan.turn_off:
                     id: fan_speed
