@@ -157,7 +157,7 @@ sensor:
       reference_temperature: 25°C
       reference_resistance: 10kOhm
   - platform: ntc
-    sensor: adc_1_resistance
+    sensor: adc_2_resistance
     id: "t_in"
     name: "Temperature in"
     calibration:
@@ -165,7 +165,7 @@ sensor:
       reference_temperature: 25°C
       reference_resistance: 10kOhm
   - platform: ntc
-    sensor: adc_1_resistance
+    sensor: adc_3_resistance
     id: "t_out"
     name: "Temperature out"
     calibration:
