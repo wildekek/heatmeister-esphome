@@ -17,7 +17,7 @@ I have no official affiliation whatsover with SDR Engineering, but I highly reco
 
 
 ### Flashing tip:
-- The Heitmeister will only boot into bootloader mode when connected to USB. If you want to flash via OTA, you must connect a 12v power supply. The board seems very well engineered, but I would always recommend to never connect both USB and 12v at the same time.
+- The HeatMeister will only boot into bootloader mode when connected to USB. If you want to flash via OTA, you must connect a 12v power supply. The board seems very well engineered, but I recommend to never connect both USB and 12v at the same time.
 
 > ## ⚠️ Warning 
 > This firmware was reverse engineered without intricate knowledge of the board design nor consent of the creator. It may damage the board, void your waranty or cause unexpected behaviour. Do not compain to me, SDR Engineering or anyone else when you fry your hardware, flash this firmware at your own risk. I have been running it without any issues for weeks without any issues.
