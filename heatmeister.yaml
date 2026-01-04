@@ -199,63 +199,7 @@ sensor:
   - platform: internal_temperature
     name: "Temperature internal"
 
-  # Import sensors from Home Assistant
-  - platform: homeassistant
-    entity_id: sensor.living_room_climate_temperature
-    name: "Temperature room"
-    disabled_by_default: True
-    device_class: "temperature"
-    unit_of_measurement: "°C"
-    state_class: "measurement"
-  - platform: homeassistant
-    entity_id: sensor.heating_controller_boiler_temperature
-    name: "Temperature boiler"
-    disabled_by_default: True
-    device_class: "temperature"
-    unit_of_measurement: "°C"
-    state_class: "measurement"
-  - platform: homeassistant
-    entity_id: sensor.heating_controller_boiler_return_temperature
-    name: "Temperature boiler return"
-    disabled_by_default: True
-    device_class: "temperature"
-    unit_of_measurement: "°C"
-    state_class: "measurement"
-  - platform: homeassistant
-    entity_id: sensor.heating_controller_boiler_central_heating_setpoint
-    name: "Temperature boiler setpoint"
-    device_class: "temperature"
-    unit_of_measurement: "°C"
-    state_class: "measurement"
-  - platform: homeassistant
-    entity_id: sensor.heating_controller_pid_heat_output
-    id: requested_heat_output
-    name: "Requested Heat Output"
-    internal: False
-    unit_of_measurement: "%"
-    state_class: "measurement"
-    on_value:
-      - if:
-          condition:
-            and: 
-              - lambda: 'return x > 0.1;'
-              - lambda: |-
-                  std::string current = id(control_strategy).current_option();
-                  return current == "output";
-          then:             
-            - fan.turn_on:
-                id: fan_speed
-                speed: !lambda |-
-                  return x;
-          else:
-            if:
-              condition: 
-                - lambda: |-
-                    std::string current = id(control_strategy).current_option();
-                    return current == "output";
-              then:
-                - fan.turn_off:
-                    id: fan_speed
+  # Delta T between the input and output of the radiator
   - platform: template
     name: "Radiator Delta-T"
     id: radiator_delta_t
@@ -294,6 +238,7 @@ sensor:
                 call.perform();
               }
 
+  # Log the speed of the fan over time
   - platform: template
     id: fan_speed_sensor
     name: "Fan Speed"
@@ -307,3 +252,41 @@ sensor:
         return 0.0;
       }
     update_interval: 10s
+
+  # Import sensors from Home Assistant
+  - platform: homeassistant
+    entity_id: sensor.living_room_climate_temperature
+    name: "Temperature room"
+    disabled_by_default: True
+    device_class: "temperature"
+    unit_of_measurement: "°C"
+    state_class: "measurement"
+  - platform: homeassistant
+    entity_id: sensor.heating_controller_pid_heat_output
+    id: requested_heat_output
+    name: "Requested Heat Output"
+    internal: False
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    on_value:
+      - if:
+          condition:
+            and: 
+              - lambda: 'return x > 0.1;'
+              - lambda: |-
+                  std::string current = id(control_strategy).current_option();
+                  return current == "output";
+          then:             
+            - fan.turn_on:
+                id: fan_speed
+                speed: !lambda |-
+                  return x;
+          else:
+            if:
+              condition: 
+                - lambda: |-
+                    std::string current = id(control_strategy).current_option();
+                    return current == "output";
+              then:
+                - fan.turn_off:
+                    id: fan_speed
