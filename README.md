@@ -1,4 +1,4 @@
-# HeatMeister ESPHomeome
+# HeatMeister ESPHome
 Unofficial ESPHome firmware for the HeatMeister by [SDR Engineering](https://www.sdr-engineering.nl/webshop/index.php?route=product/product&product_id=50).
 
 I have no official affiliation whatsover with SDR Engineering, but I highly recommend their products. Go buy one!
