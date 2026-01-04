@@ -9,7 +9,7 @@ I have no official affiliation whatsover with SDR Engineering, but I highly reco
 - I wanted to import my [OpenTherm boiler sensors](https://github.com/wildekek/esphome-opentherm-templates).
 
 ## Getting started
-1. Download the latest release
+1. Download the [latest release](https://github.com/wildekek/heatmeister-esphome/releases)
 2. Use a USB-C cable to connect your HeatMeister to your PC
 3. Open Chrome (or another browser that support WebSerial) and flash the firmware using [ESPHome WEB](https://web.esphome.io/)
 4. Connect your WiFi to the "heatmeister" access point, password '12345678'
