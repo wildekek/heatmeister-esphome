@@ -90,17 +90,63 @@ select:
       - output
       - ΔT
     initial_option: manual
-    on_value:
-      - if:
-          condition:
-            lambda: 'return x == "output";'
-          then:
-            fan.turn_on:
-              id: fan_speed
-              speed: !lambda |-
-                return id(requested_heat_output).state;  
 
+script:
+  - id: update_fan_control
+    then:
+      - lambda: |-
+          std::string strategy = id(control_strategy).current_option();
+          
+          // Manual mode: do nothing, respect user control
+          if (strategy == "manual") {
+            return;
+          }
+          
+          float desired_speed = 0.0;  // Default to off
+          
+          if (strategy == "output") {
+            // The 'output' strategy looks at a Home Assistant sensor that dictates 0-100%.
+            // This can be useful with an OpenTherm boiler, coupling the fan to the amount
+            // of heat output requested from the boiler.
+            
+            float output = id(requested_heat_output).state;
+            if (!isnan(output) && output > 0.1) {
+              desired_speed = output;
+            }
+          }
+          else if (strategy == "ΔT") {
+            // The 'ΔT' strategy optimizes for a high difference
+            // between input and output temperature
+            
+            float delta_t = id(radiator_delta_t).state;
+            float target_delta_t = 15.0;  // Optimal heat extraction
+            float t_in_val = id(t_in).state;
+            
+            if (t_in_val >= 30.0 && delta_t >= 2.0) {
+              // Increase fan if delta-T is low (poor extraction)
+              // Decrease fan if delta-T is high (already extracting well)
+              float speed_adjustment = (target_delta_t - delta_t) / target_delta_t;
+              float base_speed = (t_in_val - 30.0) / 40.0;  // 30-70°C range
+              desired_speed = base_speed * (1.0 + speed_adjustment * 0.5);
+              desired_speed = clamp(desired_speed, 0.0f, 1.0f);
+            }
+          }
+          
+          // Single actuation point
+          if (desired_speed <= 0.01) {
+            auto call = id(fan_speed).turn_off();
+            call.perform();
+          } else {
+            auto call = id(fan_speed).turn_on();
+            call.set_speed(static_cast<int>(desired_speed * 100));
+            call.perform();
+          }
 
+interval:
+  - interval: 5s
+    then:
+      - script.execute: update_fan_control
+      
 binary_sensor:
   - platform: gpio
     name: "Button"
@@ -210,31 +256,6 @@ sensor:
       if (isnan(id(t_in).state) || isnan(id(t_out).state)) return {};
       return id(t_in).state - id(t_out).state;
     update_interval: 5s
-    on_value:
-      if:
-        condition: 
-          - lambda: 'return id(control_strategy).current_option() == "ΔT";'
-        then:
-          - lambda: |-
-              float delta_t = x;
-              float target_delta_t = 15.0;  // Optimal heat extraction
-              float t_in_val = id(t_in).state;
-              
-              if (t_in_val < 30.0 || delta_t < 2.0) {
-                id(fan_speed).turn_off();
-              } else {
-                // Increase fan if delta-T is low (poor extraction)
-                // Decrease fan if delta-T is high (already extracting well)
-                float speed_adjustment = (target_delta_t - delta_t) / target_delta_t;
-                float base_speed = (t_in_val - 30.0) / 40.0;  // 30-70°C range
-                float speed = base_speed * (1.0 + speed_adjustment * 0.5);
-                speed = clamp(speed, 0.0f, 1.0f);
-                
-                id(fan_speed).turn_on();
-                auto call = id(fan_speed).make_call();
-                call.set_speed(static_cast<int>(speed * 100));
-                call.perform();
-              }
 
   # Log the speed of the fan over time
   - platform: template
@@ -266,19 +287,4 @@ sensor:
     internal: False
     unit_of_measurement: "%"
     state_class: "measurement"
-    on_value:
-      - if:
-          condition:
-            - lambda: 'return id(control_strategy).current_option() == "output";'
-          then:
-            if:
-              condition:
-                  - lambda: 'return x > 0.1;'
-              then:             
-                - fan.turn_on:
-                    id: fan_speed
-                    speed: !lambda |-
-                      return x;
-              else:
-                - fan.turn_off:
-                    id: fan_speed
+
