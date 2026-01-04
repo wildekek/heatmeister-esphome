@@ -1,6 +1,19 @@
+substitutions:
+  name: "heatmeister"
+  friendly_name: "heatmeister"
+
 esphome:
-  name: heatmeister
-  friendly_name: heatmeister
+  name: "${name}"
+  friendly_name: "${friendly_name}"
+  name_add_mac_suffix: true
+  project:
+    name: "wildekek.heatmeister-esphome"
+    version: "0.1.0"
+
+# This should point to the public location of this yaml file.
+dashboard_import:
+  package_import_url: github://wildekek/heatmeister-esphome/heatmeister.yaml@v0.1.0
+  import_full_config: false # or true
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -29,7 +42,7 @@ wifi:
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: $device_friendly_name
+    ssid: "${friendly_name}"
     password: !secret wifi_fallback_password
 captive_portal:
 
