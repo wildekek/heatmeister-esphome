@@ -141,7 +141,7 @@ script:
               float speed_adjustment = (target_delta_t - delta_t) / target_delta_t;
               float base_speed = (t_in_val - 30.0) / 40.0;  // 30-70°C range
               desired_speed = base_speed * (1.0 + speed_adjustment * 0.5);
-              desired_speed = clamp(desired_speed, 0.0f, 1.0f);
+              desired_speed = clamp(desired_speed, 0.0f, 1.0f) * 100;
             }
           }
           
@@ -151,7 +151,7 @@ script:
             call.perform();
           } else {
             auto call = id(fan_speed).turn_on();
-            call.set_speed(static_cast<int>(desired_speed * 100));
+            call.set_speed(static_cast<int>(desired_speed));
             call.perform();
           }
 
