@@ -8,7 +8,7 @@ esphome:
   name_add_mac_suffix: true
   project:
     name: "wildekek.heatmeister-esphome"
-    version: "0.1.0"
+    version: "0.1.1"
 
 # This should point to the public location of this yaml file.
 dashboard_import:
