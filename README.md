@@ -3,6 +3,9 @@ Unofficial ESPHome firmware for the HeatMeister by [SDR Engineering](https://www
 
 I have no official affiliation whatsover with SDR Engineering, but I highly recommend their products. Go buy one!
 
+<img width="666" height="817" alt="image" src="https://github.com/user-attachments/assets/ab466000-051a-43b2-b9eb-a1002785123e" />
+
+
 ### Why does this exist
 - Although the original firmware is great, I prefer running open source firmware in my house.
 - I like to play around with control strategies
